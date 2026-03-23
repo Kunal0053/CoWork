@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Worker Panel</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg, #ff5a5f, #ff7e82);
+  color: white;
+  padding: 20px;
+}
+
+/* CENTER FIX */
+.container {
+  max-width: 420px;
+  margin: auto;
+  background: white;
+  color: black;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+button {
+  background: #ff5a5f;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #e14b50;
+}
+
+.hidden {
+  display: none;
+}
+
+.dashboard p {
+  margin: 8px 0;
+  text-align: left;
+}
+
+.link {
+  cursor: pointer;
+  color: blue;
+}
+
+.status-approved { color: green; font-weight: bold; }
+.status-pending { color: orange; font-weight: bold; }
+.status-rejected { color: red; font-weight: bold; }
+
+</style>
+
+</head>
+
+<body>
+
+<h2 style="text-align:center;">👷 Worker Panel</h2>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div id="login">
+  <h3>Login</h3>
+
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+
+  <button id="loginBtn" onclick="login()">Login</button>
+
+  <p class="link" onclick="showRegister()">New user? Register</p>
+</div>
+
+<!-- REGISTER -->
+<div id="register" class="hidden">
+  <h3>Register</h3>
+
+  <input id="rname" placeholder="Name">
+
+  <!-- 🔽 DROPDOWN ADDED -->
+  <select id="rskill">
+    <option value="">Select Skill</option>
+    <option value="electrician">Electrician</option>
+    <option value="plumber">Plumber</option>
+    <option value="cobbler">Cobbler</option>
+    <option value="carpenter">Carpenter</option>
+    <option value="mechanic">Mechanic</option>
+  </select>
+
+  <input id="rlocation" placeholder="Location">
+  <input id="remail" placeholder="Email">
+  <input id="rpassword" type="password" placeholder="Password">
+
+  <label>Photo</label>
+  <input type="file" id="photo">
+
+  <label>Document</label>
+  <input type="file" id="doc">
+
+  <button id="registerBtn" onclick="register()">Submit</button>
+
+  <p class="link" onclick="showLogin()">Already have account? Login</p>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden dashboard">
+  <h3>📊 Dashboard</h3>
+
+  <p><b>Name:</b> <span id="dname"></span></p>
+  <p><b>Skill:</b> <span id="dskill"></span></p>
+  <p><b>Location:</b> <span id="dlocation"></span></p>
+  <p><b>Status:</b> <span id="dstatus"></span></p>
+  <p><b>Earnings:</b> ₹<span id="dearnings"></span></p>
+  <p><b>Gigs Done:</b> <span id="dgigs"></span></p>
+  <p><b>Rating:</b> ⭐ <span id="drating"></span></p>
+
+  <button onclick="logout()">Logout</button>
+</div>
+
+</div>
+
+<script>
+
+// AUTO LOGIN
+window.onload = () => {
+  const token = localStorage.getItem("workerToken");
+  const id = localStorage.getItem("workerId");
+
+  if (token && id) {
+    showDashboard();
+  }
+};
+
+// SWITCH UI
+function showRegister() {
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("register").classList.remove("hidden");
+}
+
+function showLogin() {
+  document.getElementById("register").classList.add("hidden");
+  document.getElementById("login").classList.remove("hidden");
+}
+
+// REGISTER
+async function register() {
+
+  const btn = document.getElementById("registerBtn");
+  btn.innerText = "Submitting...";
+  btn.disabled = true;
+
+  const name = rname.value;
+  const skill = rskill.value;
+  const location = rlocation.value;
+  const email = remail.value;
+  const password = rpassword.value;
+  const photoFile = document.getElementById("photo").files[0];
+  const docFile = document.getElementById("doc").files[0];
+
+  if (!name || !skill || !location || !email || !password || !photoFile || !docFile) {
+    alert("Fill all fields");
+    btn.innerText = "Submit";
+    btn.disabled = false;
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("name", name);
+  formData.append("skill", skill);
+  formData.append("location", location);
+  formData.append("email", email);
+  formData.append("password", password);
+  formData.append("photo", photoFile);
+  formData.append("document", docFile);
+
+  try {
+    const res = await fetch("http://localhost:3000/worker/register", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+
+    alert(data.message || "Registered!");
+    showLogin();
+
+  } catch {
+    alert("Error registering");
+  }
+
+  btn.innerText = "Submit";
+  btn.disabled = false;
+}
+
+// LOGIN
+async function login() {
+
+  const btn = document.getElementById("loginBtn");
+  btn.innerText = "Logging in...";
+  btn.disabled = true;
+
+  try {
+    const res = await fetch("http://localhost:3000/worker/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email: email.value,
+        password: password.value
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.token) {
+      alert("Invalid credentials");
+      btn.innerText = "Login";
+      btn.disabled = false;
+      return;
+    }
+
+    localStorage.setItem("workerToken", data.token);
+    localStorage.setItem("workerId", data.worker._id);
+
+    showDashboard();
+
+  } catch {
+    alert("Login error");
+  }
+
+  btn.innerText = "Login";
+  btn.disabled = false;
+}
+
+// DASHBOARD
+async function showDashboard() {
+
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("register").classList.add("hidden");
+  document.getElementById("dashboard").classList.remove("hidden");
+
+  const id = localStorage.getItem("workerId");
+
+  const res = await fetch(`http://localhost:3000/worker/dashboard/${id}`);
+  const data = await res.json();
+
+  dname.innerText = data.name;
+  dskill.innerText = data.skill;
+  dlocation.innerText = data.location;
+  dearnings.innerText = data.earnings;
+  dgigs.innerText = data.gigs;
+  drating.innerText = data.rating;
+
+  const statusEl = document.getElementById("dstatus");
+  statusEl.innerText = data.status;
+
+  statusEl.className =
+    data.status === "approved" ? "status-approved" :
+    data.status === "pending" ? "status-pending" :
+    "status-rejected";
+}
+
+// LOGOUT
+function logout() {
+  localStorage.clear();
+  location.reload();
+}
+
+</script>
+
+</body>
+</html>

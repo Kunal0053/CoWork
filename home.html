@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoWork - Home</title>
+
+<style>
+
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* BACKGROUND */
+body {
+  height: 100vh;
+  background: linear-gradient(-45deg, #ff5a5f, #ff7e82, #ff9966, #ff5a5f);
+  background-size: 400% 400%;
+  animation: bg 10s ease infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@keyframes bg {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* MAIN BOX */
+.container {
+  text-align: center;
+  color: white;
+}
+
+/* TITLE */
+h1 {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+p {
+  margin-bottom: 30px;
+  font-size: 16px;
+}
+
+/* CARD WRAPPER */
+.cards {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* CARD */
+.card {
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(15px);
+  padding: 25px;
+  width: 200px;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-8px) scale(1.05);
+  background: rgba(255,255,255,0.3);
+}
+
+/* ICON */
+.icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+/* BUTTON */
+button {
+  margin-top: 15px;
+  padding: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  background: white;
+  color: #ff5a5f;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #eee;
+}
+
+/* RESPONSIVE */
+@media(max-width: 600px){
+  .cards {
+    flex-direction: column;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>CoWork 🚀</h1>
+<p>Connecting you with trusted local workers instantly</p>
+
+<div class="cards">
+
+  <!-- USER -->
+  <div class="card">
+    <div class="icon">👤</div>
+    <h3>User</h3>
+    <p>Find & book workers</p>
+    <button onclick="goUser()">Enter</button>
+  </div>
+
+  <!-- WORKER -->
+  <div class="card">
+    <div class="icon">👷</div>
+    <h3>Worker</h3>
+    <p>Register & track earnings</p>
+    <button onclick="goWorker()">Enter</button>
+  </div>
+
+  <!-- ADMIN -->
+  <div class="card">
+    <div class="icon">⚙️</div>
+    <h3>Admin</h3>
+    <p>Manage platform</p>
+    <button onclick="goAdmin()">Enter</button>
+  </div>
+
+</div>
+
+</div>
+
+<script>
+
+function goUser() {
+  window.open("CoWork.html", "_blank");
+}
+
+function goWorker() {
+  window.open("worker.html", "_blank");
+}
+
+function goAdmin() {
+  window.open("admin-login.html", "_blank");
+}
+
+</script>
+
+</body>
+</html>

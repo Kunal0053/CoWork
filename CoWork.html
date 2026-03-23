@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoWork - Find Workers</title>
+
+<style>
+
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* 🔥 ANIMATED BACKGROUND */
+body {
+  min-height: 100vh;
+  background: linear-gradient(-45deg, #ff5a5f, #ff7e82, #ff9966, #ff5a5f);
+  background-size: 400% 400%;
+  animation: gradientBG 8s ease infinite;
+  overflow-x: hidden;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* HEADER */
+header {
+  color: white;
+  padding: 20px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* CONTAINER */
+.container {
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 20px;
+}
+
+/* GLASS CARD */
+.section {
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(15px);
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  color: white;
+}
+
+h2 {
+  margin-bottom: 15px;
+}
+
+/* INPUT */
+select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  margin-bottom: 10px;
+}
+
+/* BUTTON */
+button {
+  width: 100%;
+  padding: 12px;
+  background: #fff;
+  color: #ff5a5f;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #eee;
+}
+
+/* CARD */
+.card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 15px;
+  padding: 15px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.9);
+  color: black;
+}
+
+/* BLOBS */
+.blob {
+  position: fixed;
+  width: 250px;
+  height: 250px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+  animation: float 8s ease-in-out infinite;
+}
+
+.blob1 { top: 10%; left: 10%; }
+.blob2 { top: 60%; right: 10%; animation-delay: 2s; }
+.blob3 { bottom: 10%; left: 40%; animation-delay: 4s; }
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-60px); }
+  100% { transform: translateY(0px); }
+}
+
+header, .container {
+  position: relative;
+  z-index: 2;
+}
+
+/* IMAGE */
+.worker-img {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* BOOK BUTTON */
+.book-btn {
+  background: #28a745;
+  color: white;
+  margin-top: 8px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- BLOBS -->
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+<div class="blob blob3"></div>
+
+<header>
+CoWork 🚀 <br>
+<small style="font-size:14px;">Find trusted workers near you instantly</small>
+</header>
+
+<div class="container">
+
+<div class="section">
+<h2>🔍 Find Services</h2>
+
+<!-- ✅ UPDATED DROPDOWN -->
+<select id="serviceType">
+<option value="electrician">Electrician</option>
+<option value="plumber">Plumber</option>
+<option value="cobbler">Cobbler</option>
+<option value="carpenter">Carpenter</option>
+<option value="mechanic">Mechanic</option>
+</select>
+
+<button onclick="searchWorkers()">Search</button>
+
+<div id="results"></div>
+
+</div>
+
+</div>
+
+<script>
+
+// SEARCH WORKERS
+async function searchWorkers() {
+  const type = document.getElementById("serviceType").value;
+  const results = document.getElementById("results");
+
+  results.innerHTML = "<p>Loading...</p>";
+
+  try {
+    const res = await fetch(`http://localhost:3000/workers/${type}`);
+    const data = await res.json();
+
+    results.innerHTML = "";
+
+    if (data.length === 0) {
+      results.innerHTML = "<p>No workers available</p>";
+      return;
+    }
+
+    data.forEach(w => {
+      const div = document.createElement("div");
+      div.className = "card";
+
+      div.innerHTML = `
+        <img class="worker-img" src="${w.photo ? 'http://localhost:3000/uploads/' + w.photo : 'https://via.placeholder.com/70'}">
+
+        <div>
+          <div><b>${w.name}</b></div>
+          <div>${w.skill} | ${w.location}</div>
+          <div>⭐ ${w.rating}</div>
+
+          <button class="book-btn" onclick="bookWorker('${w.name}','${w.skill}','${w.location}')">
+            Book Now
+          </button>
+        </div>
+      `;
+
+      results.appendChild(div);
+    });
+
+  } catch (err) {
+    results.innerHTML = "Error loading workers";
+  }
+}
+
+// BOOK WORKER
+async function bookWorker(name, skill, location) {
+  await fetch("http://localhost:3000/book", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      workerName: name,
+      skill: skill,
+      location: location
+    })
+  });
+
+  alert("Booking Confirmed!");
+}
+
+</script>
+
+</body>
+</html>
